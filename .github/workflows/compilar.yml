@@ -1,0 +1,31 @@
+# Verifica se o firmware compila para o Arduino Duemilanove.
+# Roda em todo push e Pull Request para a develop e a master.
+name: Compilar firmware
+
+on:
+  push:
+    branches: [develop, master]
+  pull_request:
+    branches: [develop, master]
+  workflow_dispatch: # permite rodar manualmente pela aba Actions
+
+jobs:
+  compilar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Compilar firmware/firmware.ino
+        uses: arduino/compile-sketches@v1
+        with:
+          fqbn: arduino:avr:diecimila:cpu=atmega328
+          sketch-paths: |
+            - firmware
+          # Bibliotecas usadas pelo código. Ao adicionar uma nova, inclua aqui também.
+          libraries: |
+            - name: SD
+            - name: TMRpcm
+            # - name: MFRC522          # se o módulo NFC for RC522
+            # - name: Adafruit PN532   # se o módulo NFC for PN532
+          enable-warnings-report: true

@@ -1,0 +1,45 @@
+{
+  "configurations": [
+    {
+      "name": "Win32",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${env:LOCALAPPDATA}/Arduino15/packages/arduino/hardware/avr/**",
+        "${env:LOCALAPPDATA}/Arduino15/packages/arduino/tools/avr-gcc/**",
+        "${env:USERPROFILE}/Documents/Arduino/libraries/**"
+      ],
+      "defines": [
+        "ARDUINO=10819",
+        "ARDUINO_AVR_DUEMILANOVE",
+        "ARDUINO_ARCH_AVR",
+        "__AVR_ATmega328P__",
+        "F_CPU=16000000L"
+      ],
+      "compilerPath": "",
+      "cStandard": "c11",
+      "cppStandard": "c++11",
+      "intelliSenseMode": "gcc-x86"
+    },
+    {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${env:HOME}/.arduino15/packages/arduino/hardware/avr/**",
+        "${env:HOME}/.arduino15/packages/arduino/tools/avr-gcc/**",
+        "${env:HOME}/Arduino/libraries/**"
+      ],
+      "defines": [
+        "ARDUINO=10819",
+        "ARDUINO_AVR_DUEMILANOVE",
+        "ARDUINO_ARCH_AVR",
+        "__AVR_ATmega328P__",
+        "F_CPU=16000000L"
+      ],
+      "compilerPath": "",
+      "cStandard": "c11",
+      "cppStandard": "c++11",
+      "intelliSenseMode": "gcc-x86"
+    }
+  ],
+  "version": 4
+}
