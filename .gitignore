@@ -1,0 +1,20 @@
+# FreeCAD (backups automáticos)
+*.FCBak
+*.FCStd1
+
+# Impressão 3D (G-code é específico de cada impressora)
+*.gcode
+
+# Build do Arduino
+build/
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# VS Code: compartilha só as configurações do projeto
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/c_cpp_properties.json

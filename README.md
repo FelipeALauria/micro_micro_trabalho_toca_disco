@@ -22,11 +22,37 @@ Cada disco tem uma tag NFC própria, então cada um representa uma música difer
 ├── firmware/      # Código C++ do Arduino (leitura NFC, controle do motor, áudio)
 ├── cad/           # Arquivos do FreeCAD (.FCStd), exportações para impressão (.stl) e imagens dos modelos
 ├── docs/          # Esquemas de ligação, fotos, anotações e referências
-├── audio/         # Músicas/arquivos de exemplo para o cartão SD (se aplicável)
+├── musicas/       # Músicas que vão para o cartão SD
+├── .github/       # Workflows do GitHub Actions (verificação de compilação)
+├── INSTALACAO.md  # Passo a passo das ferramentas e bibliotecas necessárias
 └── README.md
 ```
 
 > A estrutura pode mudar conforme o projeto avança. Se criar uma pasta nova, atualize esta seção.
+
+---
+
+## 🛠️ Ferramentas
+
+Para preparar o ambiente (Arduino, bibliotecas, FreeCAD, fatiador e Git), siga o **[INSTALACAO.md](INSTALACAO.md)**.
+
+### Modelagem 3D: use o FreeCAD
+
+Para modelar as peças da impressora 3D (carcaça, prato, discos, suportes), **recomendamos usar o [FreeCAD](https://www.freecad.org/)**:
+
+- É **gratuito e open source**, roda em Windows, Linux e macOS.
+- É **paramétrico**: dá para mudar uma medida (ex.: diâmetro do disco ou do eixo do motor) e o modelo inteiro se ajusta.
+- O arquivo `.FCStd` pode ser versionado no Git junto com o código, e todo mundo usa a mesma ferramenta.
+- Exporta direto para `.stl`, que é o formato que o fatiador da impressora usa.
+
+**Convenção para a pasta `cad/`:**
+
+- Salve sempre o arquivo-fonte **`.FCStd`** (é ele que se edita).
+- Exporte o **`.stl`** de cada peça pronta para imprimir.
+- Se possível, adicione uma **imagem (`.png`)** da peça para facilitar a visualização no GitHub.
+- Use nomes claros: `carcaca.FCStd`, `carcaca.stl`, `disco.FCStd`...
+
+> Dica: arquivos `.FCStd` são binários, então o Git não consegue mesclar alterações de duas pessoas na mesma peça. **Combine quem está editando cada peça** para não perder trabalho.
 
 ---
 
