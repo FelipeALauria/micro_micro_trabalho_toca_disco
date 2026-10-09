@@ -56,6 +56,102 @@ Para modelar as peças da impressora 3D (carcaça, prato, discos, suportes), **r
 
 ---
 
+## 🙈 `.gitignore` e `.gitattributes`
+
+Esses dois arquivos ficam na raiz do repositório e controlam **como o Git trata os arquivos do projeto**. Quase nunca é preciso mexer neles, mas é bom saber o que fazem.
+
+### `.gitignore`: o que o Git ignora
+
+Tudo que estiver listado aqui **não vai para o repositório**, mesmo com `git add .`. Serve para não subir arquivos que são lixo, gerados automaticamente ou que só fazem sentido no computador de cada um.
+
+| Regra | O que é | Por que ignorar |
+|---|---|---|
+| `*.FCBak`, `*.FCStd1` | Backups automáticos que o FreeCAD cria ao salvar | São cópias do `.FCStd`; o histórico do Git já faz esse papel |
+| `*.gcode` | Arquivo gerado pelo fatiador para a impressora | É específico de cada impressora/configuração; dá para gerar de novo a partir do `.stl` |
+| `build/` | Saída da compilação do Arduino | É gerada toda vez que compila; o código-fonte é o que importa |
+| `Thumbs.db`, `desktop.ini`, `.DS_Store` | Arquivos que o Windows e o macOS criam sozinhos nas pastas | Não têm nada a ver com o projeto |
+| `.vscode/*` | Configurações pessoais do VS Code | Cada um tem as suas preferências |
+| `!.vscode/settings.json`, `!.vscode/extensions.json`, `!.vscode/c_cpp_properties.json` | Exceções (o `!` significa "**não** ignore este") | São configurações do projeto que todos devem ter: `.ino` reconhecido como C++, extensões recomendadas e onde estão as bibliotecas do Arduino |
+
+> Apareceu um arquivo que não deveria subir? Adicione o nome ou o padrão (ex.: `*.log`) no `.gitignore`. Se o arquivo **já foi commitado**, ele continua no repositório até ser removido com `git rm --cached nome-do-arquivo`.
+
+### `.gitattributes`: como o Git trata cada tipo de arquivo
+
+| Regra | O que faz | Por que |
+|---|---|---|
+| `* text=auto` | Padroniza as quebras de linha dos arquivos de texto | Windows usa `CRLF` e Linux/macOS usam `LF`. Sem isso, o Git pode achar que o arquivo inteiro mudou só porque foi salvo em outro sistema, gerando conflitos falsos |
+| `*.FCStd binary` | Marca o arquivo do FreeCAD como binário | Ele é um arquivo compactado. O Git não consegue mostrar diferenças nem mesclar duas versões, então é melhor ele nem tentar |
+| `*.stl binary` | Marca os modelos de impressão como binários | Mesmo motivo: arquivos gerados, não editáveis como texto |
+| `*.mp3`, `*.wav` `binary` | Marca as músicas como binárias | Áudio não tem "linhas" para comparar |
+| `*.jpg`, `*.png` `binary` | Marca as imagens como binárias | Evita que o Git tente converter quebras de linha e corrompa a imagem |
+
+> **Consequência prática:** como arquivos binários não podem ser mesclados, se duas pessoas editarem o mesmo `.FCStd` ao mesmo tempo, uma das versões vai ser perdida no merge. **Combinem antes quem está mexendo em cada peça.**
+
+---
+
+## ⚙️ GitHub Actions (`.github/`)
+
+O **GitHub Actions** é um serviço do GitHub que roda tarefas automaticamente quando algo acontece no repositório (um push, um Pull Request...). Aqui ele é usado para **verificar se o firmware compila** antes de qualquer código entrar na `develop` ou na `master`.
+
+```
+.github/
+└── workflows/
+    └── compilar.yml   # Verificação de compilação do firmware
+```
+
+O GitHub só procura workflows dentro de `.github/workflows/`, então **o nome e o lugar dessa pasta não podem mudar**.
+
+### O que o `compilar.yml` faz
+
+1. **Quando roda:** em todo push e todo Pull Request para a `develop` ou a `master`. Também dá para rodar na mão pela aba **Actions → Compilar firmware → Run workflow**.
+2. **Onde roda:** o GitHub cria uma máquina Linux temporária, que é apagada no final.
+3. **O que faz:**
+   - baixa o código do repositório;
+   - instala o compilador do Arduino e as bibliotecas listadas no arquivo;
+   - compila o `firmware/firmware.ino` para o **Arduino Duemilanove (ATmega328)**.
+4. **Resultado:** ✅ se compilou, ❌ se deu erro. O resultado aparece no Pull Request e na aba **Actions**, onde dá para ver o log com a mensagem de erro.
+
+### Por que isso é necessário
+
+- **Pega erro antes de chegar na `develop`:** erro de sintaxe, biblioteca faltando ou nome errado aparecem no PR, e não no computador de quem baixar depois.
+- **Avisa se o código não cabe na placa:** o Duemilanove tem só 32 KB de memória para o programa e 2 KB de RAM. Com SD, áudio e NFC juntos, isso estoura fácil, e a compilação falha.
+- **Trava a `master` de verdade:** a proteção da `master` está configurada para **só aceitar PR com o check `compilar` ✅**. Sem o workflow, a regra "só entra código validado" dependeria de cada um lembrar de testar.
+
+### O que ele **não** faz
+
+Ele só garante que o código **compila**. Não testa se o NFC lê a tag, se o motor gira ou se o som sai. Isso continua sendo testado com a placa montada, na `develop`.
+
+### Quando mexer nele
+
+- **Adicionou uma biblioteca nova no código?** Adicione também na lista `libraries:` do `compilar.yml`. Senão o check falha com "No such file or directory".
+- **Trocou de placa?** Mude o `fqbn:`.
+- **Renomeou a pasta ou o arquivo do firmware?** A pasta e o `.ino` precisam ter o **mesmo nome** (`firmware/firmware.ino`). Isso é exigência do Arduino.
+
+---
+
+## 🧩 Configurações do VS Code (`.vscode/`)
+
+A pasta `.vscode/` guarda configurações que o VS Code aplica automaticamente quando alguém abre o projeto. Assim **todo mundo trabalha com o mesmo ambiente** sem precisar configurar nada na mão.
+
+```
+.vscode/
+├── settings.json           # Configurações do editor para este projeto
+├── extensions.json         # Extensões recomendadas
+└── c_cpp_properties.json   # Onde ficam as bibliotecas do Arduino (para o autocompletar)
+```
+
+| Arquivo | O que faz | Por que é necessário |
+|---|---|---|
+| `settings.json` | Diz ao VS Code para tratar arquivos `.ino` como **C++** | Por padrão o VS Code não conhece `.ino`. Sem isso, o código fica sem cores, sem autocompletar e sem detecção de erros |
+| `extensions.json` | Recomenda as extensões **C/C++** (Microsoft) e **Arduino Community Edition** | Ao abrir o projeto, o VS Code pergunta se quer instalar. Todo mundo fica com as mesmas ferramentas |
+| `c_cpp_properties.json` | Aponta onde estão os arquivos do Arduino instalados pela Arduino IDE (no Windows e no Linux) e define a placa (ATmega328, 16 MHz) | Sem isso, o VS Code não acha o `Arduino.h` e marca `Serial`, `pinMode`, `digitalWrite` etc. como erro (sublinhado vermelho), mesmo com o código certo |
+
+> **Importante:** o `c_cpp_properties.json` só funciona se a **Arduino IDE estiver instalada** e tiver sido aberta pelo menos uma vez com a placa Duemilanove selecionada (veja o [INSTALACAO.md](INSTALACAO.md)). Se o sublinhado vermelho continuar, rode **Ctrl+Shift+P → "Reload Window"**.
+
+> Essas configurações são **só do editor**: não afetam a compilação. Quem usa só a Arduino IDE pode ignorar a pasta `.vscode/`. Configurações pessoais (tema, fonte...) devem ficar nas configurações do usuário do VS Code, não aqui. Por isso o `.gitignore` só deixa subir esses três arquivos.
+
+---
+
 ## 🌿 Branches
 
 O projeto segue um fluxo simples com duas branches principais:
